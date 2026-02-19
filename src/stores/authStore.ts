@@ -5,7 +5,10 @@ import type { Session } from "@/types";
 import { useAdminStore } from "@/stores/adminStore";
 
 function getUsers() {
-  return useAdminStore.getState().users?.length ? useAdminStore.getState().users : USERS;
+  const adminUsers = useAdminStore.getState().users ?? [];
+  const seenEmails = new Set(adminUsers.map((u) => u.email));
+  const seedOnly = USERS.filter((u) => !seenEmails.has(u.email));
+  return adminUsers.length > 0 ? [...adminUsers, ...seedOnly] : USERS;
 }
 
 interface AuthState {

@@ -184,18 +184,6 @@ export const NAV_CONFIG: NavItem[] = [
     roles: ["employee"],
   },
   {
-    label: "Training",
-    href: "/training",
-    icon: "GraduationCap",
-    roles: ["hr", "manager", "employee"],
-  },
-  {
-    label: "Benefits",
-    href: "/benefits",
-    icon: "Gift",
-    roles: ["hr", "employee"],
-  },
-  {
     label: "Admin",
     href: "/admin/roles",
     icon: "Shield",
@@ -203,8 +191,6 @@ export const NAV_CONFIG: NavItem[] = [
     children: [
       { label: "Roles & Permissions", href: "/admin/roles", icon: "Key" },
       { label: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
-      { label: "Notification Setup", href: "/admin/notifications", icon: "Bell" },
-      { label: "User Management", href: "/admin/users", icon: "Users" },
     ],
   },
 ];

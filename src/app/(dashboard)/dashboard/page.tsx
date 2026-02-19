@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -22,6 +22,8 @@ import { useLeaveStore } from "@/stores/leaveStore";
 import { usePayrollStore } from "@/stores/payrollStore";
 import { useRecruitmentStore } from "@/stores/recruitmentStore";
 import { usePerformanceStore } from "@/stores/performanceStore";
+import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useNotificationStore } from "@/stores/notificationStore";
 import { HOLIDAYS } from "@/data/dummyData";
 import { StatCard } from "@/components/charts/StatCard";
 import { BarChart } from "@/components/charts/BarChart";
@@ -640,6 +642,35 @@ function EmployeeDashboard() {
 
 export default function DashboardPage() {
   const session = useAuthStore((s) => s.session);
+  const employees = useEmployeeStore((s) => s.employees);
+  const notifications = useNotificationStore((s) => s.notifications);
+  const addNotification = useNotificationStore((s) => s.addNotification);
+
+  useEffect(() => {
+    if (!session) return;
+    useOnboardingStore.getState().checkOverdueTasks();
+    const today = new Date();
+    const todayMMDD = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const birthdayEmployees = employees.filter(
+      (e) => e.dob.slice(5) === todayMMDD && e.status === "Active"
+    );
+    birthdayEmployees.forEach((emp) => {
+      const alreadyNotified = notifications.some(
+        (n) =>
+          n.title.includes("Birthday") &&
+          n.link === `/employees/${emp.id}` &&
+          n.createdAt.startsWith(today.toISOString().split("T")[0])
+      );
+      if (!alreadyNotified) {
+        addNotification({
+          userId: session.userId,
+          title: "Birthday today",
+          message: `Today is ${emp.name}'s birthday. Don't forget to wish them!`,
+          link: `/employees/${emp.id}`,
+        });
+      }
+    });
+  }, [session?.userId, employees, notifications.length, addNotification]);
 
   if (!session) return null;
 

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Target, Plus } from "lucide-react";
+import { Target, Plus, Pencil } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useEmployeeStore } from "@/stores/employeeStore";
 import { usePerformanceStore } from "@/stores/performanceStore";
@@ -47,7 +47,9 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/common/EmptyState";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { Progress } from "@/components/ui/progress";
 import { formatDate } from "@/lib/formatters";
+import type { Goal } from "@/types";
 
 const setGoalSchema = z.object({
   employeeId: z.string().min(1, "Select employee"),
@@ -92,6 +94,7 @@ export default function PerformancePage() {
   const employees = useEmployeeStore((s) => s.employees);
   const cycles = usePerformanceStore((s) => s.cycles);
   const goals = usePerformanceStore((s) => s.goals);
+  const updateGoalProgress = usePerformanceStore((s) => s.updateGoalProgress);
   const reviews = usePerformanceStore((s) => s.reviews);
   const addGoal = usePerformanceStore((s) => s.addGoal);
   const submitSelfReview = usePerformanceStore((s) => s.submitSelfReview);
@@ -104,6 +107,8 @@ export default function PerformancePage() {
   const [finalizeReviewId, setFinalizeReviewId] = useState<string | null>(null);
   const [finalizeRatingVal, setFinalizeRatingVal] = useState(3);
   const [createCycleOpen, setCreateCycleOpen] = useState(false);
+  const [updatingGoal, setUpdatingGoal] = useState<Goal | null>(null);
+  const [progressSlider, setProgressSlider] = useState(0);
 
   const activeCycle = useMemo(() => cycles.find((c) => c.status === "Active") ?? cycles[0], [cycles]);
 
@@ -283,21 +288,71 @@ export default function PerformancePage() {
             goalsForView.length === 0 ? (
               <EmptyState icon={Target} title="No goals" description="Your manager will set goals for you." />
             ) : (
+              <>
               <div className="grid gap-4 sm:grid-cols-2">
                 {goalsForView.map((g) => (
                   <Card key={g.id} className={`rounded-xl shadow-sm ${g.status === "At Risk" ? "border-amber-200" : g.status === "Completed" ? "border-emerald-200" : ""}`}>
                     <CardContent className="pt-6">
                       <p className="font-medium text-slate-900">{g.title}</p>
                       <p className="text-xs text-slate-500">{g.category} · Due {formatDate(g.deadline)}</p>
-                      <div className="mt-2 h-2 rounded-full bg-slate-100">
-                        <div className="h-2 rounded-full bg-primary" style={{ width: `${g.progress}%` }} />
+                      <div className="mt-2 flex items-center gap-3">
+                        <div className="flex-1 h-2 rounded-full bg-slate-100">
+                          <div className="h-2 rounded-full bg-primary" style={{ width: `${g.progress}%` }} />
+                        </div>
+                        <span className="text-sm font-medium w-10 text-right">{g.progress}%</span>
+                        {g.status !== "Completed" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setUpdatingGoal(g);
+                              setProgressSlider(g.progress);
+                            }}
+                            aria-label="Update progress"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
-                      <p className="mt-1 text-sm text-slate-600">{g.progress}%</p>
                       <StatusBadge status={g.status} className="mt-2" />
                     </CardContent>
                   </Card>
                 ))}
               </div>
+              <Dialog open={!!updatingGoal} onOpenChange={(open) => !open && setUpdatingGoal(null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Update progress — {updatingGoal?.title}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    <label className="text-sm font-medium">Progress: {progressSlider}%</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={progressSlider}
+                      onChange={(e) => setProgressSlider(Number(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                    <Progress value={progressSlider} />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={() => {
+                        if (updatingGoal) {
+                          updateGoalProgress(updatingGoal.id, progressSlider);
+                          toast.success("Progress updated");
+                          setUpdatingGoal(null);
+                        }
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              </>
             )
           ) : (
             goalsForView.length === 0 ? (

@@ -85,6 +85,7 @@ function CandidateCard({
   onSchedule,
   onFeedback,
   onOffer,
+  onConvertToEmployee,
   isHR,
 }: {
   candidate: Candidate;
@@ -93,6 +94,7 @@ function CandidateCard({
   onSchedule: (c: Candidate) => void;
   onFeedback: (c: Candidate, interviewId: string) => void;
   onOffer: (c: Candidate) => void;
+  onConvertToEmployee: (c: Candidate) => void;
   isHR: boolean;
 }) {
   const daysSince = differenceInDays(new Date(), new Date(candidate.appliedOn));
@@ -140,6 +142,11 @@ function CandidateCard({
                 Offer
               </Button>
             )}
+            {(candidate.status === "Offered" || candidate.status === "Joined") && isHR && (
+              <Button size="sm" className="h-7 text-xs" onClick={() => onConvertToEmployee(candidate)}>
+                Convert to Employee
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
@@ -158,6 +165,7 @@ export default function CandidatesPage() {
   const scheduleInterview = useRecruitmentStore((s) => s.scheduleInterview);
   const submitFeedback = useRecruitmentStore((s) => s.submitFeedback);
   const sendOffer = useRecruitmentStore((s) => s.sendOffer);
+  const convertToEmployee = useRecruitmentStore((s) => s.convertToEmployee);
   const employees = useEmployeeStore((s) => s.employees);
 
   const [scheduleCandidate, setScheduleCandidate] = useState<Candidate | null>(null);
@@ -304,6 +312,14 @@ export default function CandidatesPage() {
                       onSchedule={setScheduleCandidate}
                       onFeedback={openFeedback}
                       onOffer={openOffer}
+                      onConvertToEmployee={(c) => {
+                        const prefill = convertToEmployee(c.id);
+                        if (prefill) {
+                          router.push(
+                            `/employees/add?name=${encodeURIComponent(prefill.name)}&email=${encodeURIComponent(prefill.email)}&phone=${encodeURIComponent(prefill.phone)}`
+                          );
+                        }
+                      }}
                       isHR={isHR}
                     />
                   ))}

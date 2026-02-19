@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Menu, Bell, User, LogOut } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -59,11 +59,19 @@ function getPageTitle(pathname: string): string {
 
 export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const session = useAuthStore((s) => s.session);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const allNotifications = useNotificationStore((s) => s.notifications);
   const markRead = useNotificationStore((s) => s.markRead);
   const markAllRead = useNotificationStore((s) => s.markAllRead);
+
+  const handleNotificationClick = (n: (typeof allNotifications)[0]) => {
+    markRead(n.id);
+    if (n.link) router.push(n.link);
+    setNotifOpen(false);
+  };
 
   const userId = session?.userId ?? "";
   const notifications = useMemo(
@@ -106,7 +114,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
           {title}
         </h1>
         <div className="ml-auto flex items-center gap-2">
-          <Popover>
+          <Popover open={notifOpen} onOpenChange={setNotifOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
@@ -140,7 +148,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
                       key={n.id}
                       type="button"
                       className={`w-full border-b px-3 py-2.5 text-left text-sm hover:bg-slate-50 ${!n.read ? "bg-primary/5" : ""}`}
-                      onClick={() => markRead(n.id)}
+                      onClick={() => handleNotificationClick(n)}
                     >
                       <p className="font-medium text-slate-900">{n.title}</p>
                       <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">{n.message}</p>

@@ -103,26 +103,28 @@ export default function SalaryStructuresPage() {
         description="View and edit employee salary (CTC and components)."
       />
 
-      <Card className="rounded-xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Salary bands (reference)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            {SALARY_BANDS.map((b) => (
-              <div
-                key={b.name}
-                className="rounded-lg border border-slate-200 px-4 py-2"
-              >
-                <p className="font-medium text-slate-900">{b.name}</p>
-                <p className="text-sm text-slate-500">
-                  {formatCurrency(b.minCtc)} – {formatCurrency(b.maxCtc)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <section className="mb-8">
+        <h2 className="font-display text-lg font-semibold text-slate-900">Salary Bands</h2>
+        <p className="text-sm text-slate-500 mt-1">CTC ranges for each experience level</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          {SALARY_BANDS.map((band) => (
+            <Card key={band.id} className="p-5">
+              <p className="font-display font-semibold text-lg">{band.name}</p>
+              <p className="text-2xl font-bold text-primary mt-1">
+                {formatCurrency(band.minCTC / 12)}
+                <span className="text-sm font-normal text-slate-500">/mo</span>
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {formatCurrency(band.minCTC)} – {formatCurrency(band.maxCTC)} CTC/yr
+              </p>
+              <p className="text-xs text-slate-400 mt-2">{band.description}</p>
+              <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium mt-3">
+                {band.employeeCount} employees
+              </span>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <Card className="rounded-xl shadow-sm">
         <CardHeader>

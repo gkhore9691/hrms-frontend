@@ -186,6 +186,7 @@ export const usePayrollStore = create<PayrollState>()(
             userId: u.id,
             title: "Payroll processed",
             message: `${monthLabel} payroll has been processed. Your payslip is available.`,
+            link: "/payroll/payslips",
           });
         });
       },

@@ -23,8 +23,12 @@ npx playwright test --project=chromium
 - **`fixtures/auth.ts`** – Login helper `loginAs(page, role)` and authenticated fixture for HR / Manager / Employee.
 - **`auth.spec.ts`** – Login form, invalid credentials, quick login for all roles, redirect when unauthenticated.
 - **`dashboard.spec.ts`** – Dashboard loads for HR, Manager, Employee.
-- **`pages.spec.ts`** – Key pages load (Employees, Attendance, Leave, Payroll, Recruitment, Helpdesk, Reports, Admin, Training, Benefits); ESS for employee.
-- **`flows.spec.ts`** – Leave tab, Attendance check-in, Helpdesk raise ticket, Recruitment, Employee detail, Sidebar nav, User menu logout.
+- **`pages.spec.ts`** – Main pages (Employees, Attendance, Leave, Payroll, Recruitment, Helpdesk, Reports, Admin Roles/Audit, Training, Benefits); ESS for employee.
+- **`pages-extra.spec.ts`** – Add Employee, Org Chart, Onboarding, Shifts, Holidays, Salary Structures, Payslips, Performance, Profile, Admin Notifications/Users, Job detail, Onboarding detail.
+- **`flows.spec.ts`** – Leave Apply tab, Attendance check-in, Helpdesk raise ticket, Recruitment→candidates, Employee detail tabs, Sidebar nav, User menu logout.
+- **`flows-extra.spec.ts`** – Performance tabs, Manager leave tabs, Payroll summary, Admin roles UI, Notifications bell, Profile in menu.
+
+See **`COVERAGE.md`** for a full route × test matrix.
 
 ## Requirements
 

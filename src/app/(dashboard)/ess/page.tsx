@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -25,7 +25,7 @@ const TILES = [
   {
     label: "Apply Leave",
     description: "Submit and track leave requests",
-    href: "/leave",
+    href: "/leave?tab=apply",
     icon: CalendarDays,
   },
   {
@@ -94,6 +94,16 @@ export default function ESSPage() {
     }
   }, [session, router]);
 
+  const sortedAnnouncements = useMemo(
+    () =>
+      [...ANNOUNCEMENTS].sort((a, b) => {
+        if ((a.pinned ?? false) && !(b.pinned ?? false)) return -1;
+        if (!(a.pinned ?? false) && (b.pinned ?? false)) return 1;
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }),
+    []
+  );
+
   if (!session) return null;
   if (session.role !== "employee") return null;
 
@@ -134,11 +144,14 @@ export default function ESSPage() {
       <section id="announcements" className="scroll-mt-4">
         <h2 className="mb-4 font-display text-xl font-semibold">Announcements</h2>
         <div className="space-y-4">
-          {ANNOUNCEMENTS.map((a) => (
+          {sortedAnnouncements.map((a) => (
             <Card key={a.id} className="rounded-xl shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between gap-2 text-base">
-                  <span>{a.title}</span>
+                  <span className="flex items-center gap-2">
+                    {a.pinned && <span title="Pinned">📌</span>}
+                    {a.title}
+                  </span>
                   <span className="text-sm font-normal text-slate-500">
                     {formatDate(a.date)}
                   </span>

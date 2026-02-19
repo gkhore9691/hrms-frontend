@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/common/EmptyState";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDate, getWorkingDays } from "@/lib/formatters";
 
 const applySchema = z.object({
@@ -103,6 +104,13 @@ export default function LeavePage() {
     resolver: zodResolver(policySchema),
     defaultValues: { name: "", code: "", totalDays: 0, carryForward: false },
   });
+
+  const fromDate = applyForm.watch("fromDate");
+  const toDate = applyForm.watch("toDate");
+  const workingDays = useMemo(() => {
+    if (!fromDate || !toDate || fromDate > toDate) return 0;
+    return getWorkingDays(fromDate, toDate, holidayDates);
+  }, [fromDate, toDate, holidayDates]);
 
   const myRequests = useMemo(
     () => requests.filter((r) => r.employeeId === employeeId),
@@ -308,6 +316,21 @@ export default function LeavePage() {
                       )}
                     />
                   </div>
+                  {fromDate && toDate && workingDays > 0 && (
+                    <Alert className="border-amber-200 bg-amber-50 text-amber-800">
+                      <AlertDescription>
+                        <strong>{workingDays} working day{workingDays !== 1 ? "s" : ""}</strong> will be deducted
+                        (excludes weekends and public holidays).
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {fromDate && toDate && workingDays === 0 && fromDate <= toDate && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        Selected range contains only weekends/holidays. Please choose different dates.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <FormField
                     control={applyForm.control}
                     name="reason"

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { EMPLOYEES } from "@/data/dummyData";
 import { useAdminStore } from "@/stores/adminStore";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 import type { Employee, EmployeeDocument } from "@/types";
 
 interface EmployeeState {
@@ -23,6 +24,7 @@ export const useEmployeeStore = create<EmployeeState>()(
         set((state) => ({
           employees: [...state.employees, employee],
         }));
+        useOnboardingStore.getState().assignChecklist(employee.id);
         useAdminStore.getState().addAuditLog({
           action: "Employee Created",
           module: "Employee",

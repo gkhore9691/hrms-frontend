@@ -39,9 +39,16 @@ export const CANDIDATE_STATUSES = [
 export const EMPLOYEE_STATUSES = ["Active", "Inactive"] as const;
 
 // Salary bands (for display / reference)
-export const SALARY_BANDS = [
-  { name: "Fresher", minCtc: 300000, maxCtc: 600000 },
-  { name: "Junior", minCtc: 600000, maxCtc: 1200000 },
-  { name: "Senior", minCtc: 1200000, maxCtc: 2400000 },
-  { name: "Manager", minCtc: 2400000, maxCtc: 5000000 },
-] as const;
+export const SALARY_BANDS: {
+  id: string;
+  name: string;
+  minCTC: number;
+  maxCTC: number;
+  description: string;
+  employeeCount: number;
+}[] = [
+  { id: "sb1", name: "Fresher", minCTC: 400000, maxCTC: 600000, description: "0–1 years experience", employeeCount: 4 },
+  { id: "sb2", name: "Junior", minCTC: 600000, maxCTC: 1200000, description: "1–3 years experience", employeeCount: 8 },
+  { id: "sb3", name: "Senior", minCTC: 1200000, maxCTC: 2000000, description: "3–7 years experience", employeeCount: 7 },
+  { id: "sb4", name: "Manager", minCTC: 2000000, maxCTC: 3000000, description: "7+ years, people manager", employeeCount: 3 },
+];

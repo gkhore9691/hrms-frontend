@@ -35,6 +35,7 @@ interface RecruitmentState {
     candidateId: string,
     offerData?: { ctc: string; joiningDate: string; designation: string }
   ) => void;
+  convertToEmployee: (candidateId: string) => { name: string; email: string; phone: string } | null;
 }
 
 function nextJobId(jobs: JobOpening[]): string {
@@ -172,6 +173,7 @@ export const useRecruitmentStore = create<RecruitmentState>()(
             userId: interviewerUserId,
             title: "Interview scheduled",
             message: `You have an interview scheduled for ${candidate.name} (Round ${input.round}, ${input.type}).`,
+            link: "/recruitment",
           });
         }
       },
@@ -223,6 +225,29 @@ export const useRecruitmentStore = create<RecruitmentState>()(
           timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
           details: "Offer letter sent",
         });
+      },
+
+      convertToEmployee: (candidateId) => {
+        const cand = get().candidates.find((c) => c.id === candidateId);
+        if (!cand) return null;
+        set((state) => ({
+          candidates: state.candidates.map((c) =>
+            c.id === candidateId ? { ...c, status: "Joined" as CandidateStatus } : c
+          ),
+        }));
+        useAdminStore.getState().addAuditLog({
+          action: "Candidate Converted to Employee",
+          module: "Recruitment",
+          performedBy: "EMP001",
+          target: candidateId,
+          timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
+          details: `${cand.name} → Employee`,
+        });
+        return {
+          name: cand.name,
+          email: cand.email,
+          phone: cand.phone ?? "",
+        };
       },
     }),
     { name: "hrms-recruitment", storage: createJSONStorage(() => localStorage) }

@@ -80,6 +80,7 @@ export const useLeaveStore = create<LeaveState>()(
             userId: managerUserId,
             title: "Leave request submitted",
             message: `${emp?.name ?? "An employee"} applied for ${input.days} day(s) leave. Please review.`,
+            link: "/leave",
           });
         }
       },
@@ -130,6 +131,7 @@ export const useLeaveStore = create<LeaveState>()(
             userId: empUserId,
             title: "Leave approved",
             message: `Your leave request (${req.days} day(s)) has been approved.`,
+            link: "/leave",
           });
         }
       },
@@ -156,6 +158,7 @@ export const useLeaveStore = create<LeaveState>()(
               userId: empUserId,
               title: "Leave rejected",
               message: `Your leave request has been rejected.${comments ? ` Reason: ${comments}` : ""}`,
+              link: "/leave",
             });
           }
         }

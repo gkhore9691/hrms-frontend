@@ -78,6 +78,7 @@ export default function HelpdeskPage() {
   const addComment = useHelpdeskStore((s) => s.addComment);
   const updateStatus = useHelpdeskStore((s) => s.updateStatus);
   const resolveTicket = useHelpdeskStore((s) => s.resolveTicket);
+  const closeTicket = useHelpdeskStore((s) => s.closeTicket);
   const reopenTicket = useHelpdeskStore((s) => s.reopenTicket);
   const markPaidInPayroll = useHelpdeskStore((s) => s.markPaidInPayroll);
 
@@ -320,11 +321,14 @@ export default function HelpdeskPage() {
                     {selectedTicket.status !== "Resolved" && selectedTicket.status !== "Closed" && (
                       <Button size="sm" variant="outline" onClick={() => { resolveTicket(selectedTicket.id); toast.success("Resolved"); }}>Resolve</Button>
                     )}
-                    {(selectedTicket.status === "Resolved" || selectedTicket.status === "Closed") && (
-                      <Button size="sm" variant="outline" onClick={() => { reopenTicket(selectedTicket.id); toast.success("Reopened"); }}>Reopen</Button>
-                    )}
                     {selectedTicket.status === "Resolved" && (
-                      <Button size="sm" variant="outline" onClick={() => { updateStatus(selectedTicket.id, "Closed"); toast.success("Closed"); }}>Close</Button>
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => { reopenTicket(selectedTicket.id); toast.success("Reopened"); }}>Reopen</Button>
+                        <Button size="sm" onClick={() => { closeTicket(selectedTicket.id); toast.success("Ticket closed"); }}>Close Ticket</Button>
+                      </>
+                    )}
+                    {selectedTicket.status === "Closed" && (
+                      <span className="text-sm text-slate-500 font-medium">Closed</span>
                     )}
                     {selectedTicket.category === "Reimbursement" && !selectedTicket.paidInPayroll && selectedTicket.status !== "Closed" && (
                       <Button size="sm" variant="secondary" onClick={() => { markPaidInPayroll(selectedTicket.id); toast.success("Marked as paid in payroll"); }}>Mark as paid in payroll</Button>

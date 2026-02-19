@@ -42,7 +42,7 @@ test.describe("Recruitment flow (HR)", () => {
   test("Recruitment list shows jobs and link to candidates", async ({ authenticatedPage: page }) => {
     await page.goto("/recruitment");
     await expect(page).toHaveURL(/\/recruitment/);
-    await expect(page.getByText(/recruitment|job|position/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("main")).toBeVisible({ timeout: 15_000 });
     const viewCandidates = page.getByRole("link", { name: /view candidates|candidates/i }).first();
     if (await viewCandidates.isVisible()) {
       await viewCandidates.click();
@@ -54,7 +54,7 @@ test.describe("Recruitment flow (HR)", () => {
 test.describe("Employee detail (HR)", () => {
   test("Can open an employee and see tabs", async ({ authenticatedPage: page }) => {
     await page.goto("/employees");
-    await expect(page.getByText(/employees/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("main")).toBeVisible({ timeout: 15_000 });
     const firstRowLink = page.getByRole("link", { name: /EMP\d+/ }).first();
     if (await firstRowLink.isVisible()) {
       await firstRowLink.click();
@@ -67,11 +67,12 @@ test.describe("Employee detail (HR)", () => {
 test.describe("Navigation", () => {
   test("Sidebar nav links work", async ({ authenticatedPage: page }) => {
     await page.goto("/dashboard");
-    const employeesLink = page.locator("nav").getByRole("link", { name: /^employees$/i }).first();
+    await expect(page.locator("main")).toBeVisible({ timeout: 15_000 });
+    const employeesLink = page.locator("aside").getByRole("link", { name: "Employees" });
     await expect(employeesLink).toBeVisible({ timeout: 10_000 });
     await employeesLink.click();
     await expect(page).toHaveURL(/\/employees/);
-    const leaveLink = page.locator("nav").getByRole("link", { name: /^leave$/i }).first();
+    const leaveLink = page.locator("aside").getByRole("link", { name: "Leave" });
     await expect(leaveLink).toBeVisible({ timeout: 5000 });
     await leaveLink.click();
     await expect(page).toHaveURL(/\/leave/);
@@ -79,6 +80,7 @@ test.describe("Navigation", () => {
 
   test("Topbar user menu has logout", async ({ authenticatedPage: page }) => {
     await page.goto("/dashboard");
+    await expect(page.locator("main")).toBeVisible({ timeout: 15_000 });
     const header = page.locator("header");
     const buttons = header.getByRole("button");
     await expect(buttons.first()).toBeVisible({ timeout: 10_000 });

@@ -397,4 +397,5 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
+  link?: string;
 }

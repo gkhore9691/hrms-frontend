@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -92,6 +92,7 @@ function nextEmployeeId(employees: Employee[]): string {
 
 export default function AddEmployeePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const session = useAuthStore((s) => s.session);
   const employees = useEmployeeStore((s) => s.employees);
   const addEmployee = useEmployeeStore((s) => s.addEmployee);
@@ -105,10 +106,34 @@ export default function AddEmployeePage() {
     }
   }, [session, router]);
 
+  const nameFromUrl = searchParams.get("name") ?? "";
+  const emailFromUrl = searchParams.get("email") ?? "";
+  const phoneFromUrl = searchParams.get("phone") ?? "";
+  const hasPrefill = !!(nameFromUrl || emailFromUrl || phoneFromUrl);
+
   const form1 = useForm<Step1Values>({
     resolver: zodResolver(step1Schema),
-    defaultValues: formData as Step1Values,
+    defaultValues: {
+      name: formData.name ?? nameFromUrl,
+      dob: formData.dob ?? "",
+      gender: formData.gender ?? "",
+      bloodGroup: formData.bloodGroup ?? "",
+      phone: formData.phone ?? phoneFromUrl,
+      email: formData.email ?? emailFromUrl,
+      address: formData.address ?? "",
+    },
   });
+
+  useEffect(() => {
+    if (hasPrefill && step === 1) {
+      form1.reset({
+        ...form1.getValues(),
+        name: nameFromUrl || form1.getValues().name,
+        email: emailFromUrl || form1.getValues().email,
+        phone: phoneFromUrl || form1.getValues().phone,
+      });
+    }
+  }, [hasPrefill]); // eslint-disable-line react-hooks/exhaustive-deps
   const form2 = useForm<Step2Values>({
     resolver: zodResolver(step2Schema),
     defaultValues: { reportingManagerId: null } as Step2Values,

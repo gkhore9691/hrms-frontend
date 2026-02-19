@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { HELPDESK_TICKETS } from "@/data/dummyData";
+import { HELPDESK_TICKETS, USERS } from "@/data/dummyData";
 import { useAdminStore } from "@/stores/adminStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import type { HelpdeskTicket, TicketComment, TicketStatus } from "@/types";
@@ -17,6 +17,7 @@ interface HelpdeskState {
   addComment: (ticketId: string, comment: Omit<TicketComment, "date"> & { date?: string }) => void;
   updateStatus: (ticketId: string, status: TicketStatus) => void;
   resolveTicket: (ticketId: string) => void;
+  closeTicket: (ticketId: string) => void;
   reopenTicket: (ticketId: string) => void;
   markPaidInPayroll: (ticketId: string) => void;
 }
@@ -62,12 +63,14 @@ export const useHelpdeskStore = create<HelpdeskState>()(
           timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
           details: input.subject,
         });
-        const hrUser = useAdminStore.getState().users.find((u) => u.role === "hr");
+        const adminUsers = useAdminStore.getState().users ?? [];
+        const hrUser = adminUsers.find((u) => u.role === "hr") ?? USERS.find((u) => u.role === "hr");
         if (hrUser) {
           useNotificationStore.getState().addNotification({
             userId: hrUser.id,
             title: "New helpdesk ticket",
             message: `${input.subject} (${ticketNo})`,
+            link: "/helpdesk",
           });
         }
       },
@@ -94,6 +97,7 @@ export const useHelpdeskStore = create<HelpdeskState>()(
               userId: assigneeUserId,
               title: "Ticket assigned to you",
               message: `${ticket.ticketNo}: ${ticket.subject}`,
+              link: "/helpdesk",
             });
           }
         }
@@ -145,6 +149,24 @@ export const useHelpdeskStore = create<HelpdeskState>()(
           target: ticketId,
           timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
           details: "Ticket resolved",
+        });
+      },
+
+      closeTicket: (ticketId) => {
+        set((state) => ({
+          tickets: state.tickets.map((t) =>
+            t.id === ticketId && t.status === "Resolved"
+              ? { ...t, status: "Closed" as TicketStatus }
+              : t
+          ),
+        }));
+        useAdminStore.getState().addAuditLog({
+          action: "Ticket Closed",
+          module: "Helpdesk",
+          performedBy: "EMP001",
+          target: ticketId,
+          timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
+          details: "Ticket closed",
         });
       },
 

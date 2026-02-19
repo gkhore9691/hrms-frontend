@@ -3,6 +3,7 @@ export interface Announcement {
   title: string;
   date: string;
   body: string;
+  pinned?: boolean;
 }
 
 export const ANNOUNCEMENTS: Announcement[] = [
@@ -11,12 +12,14 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: "Office closed for Republic Day",
     date: "2025-01-20",
     body: "The office will remain closed on 26 January (Republic Day). All employees are requested to mark the day in the holiday calendar. Wishing everyone a happy Republic Day!",
+    pinned: true,
   },
   {
     id: "a2",
     title: "New wellness program launch",
     date: "2025-01-15",
     body: "HR is launching a wellness program from February. This includes gym reimbursement, mental health support, and annual health check-ups. Details will be shared via email.",
+    pinned: true,
   },
   {
     id: "a3",

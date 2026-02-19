@@ -32,8 +32,11 @@ export const useAdminStore = create<AdminState>()(
       auditLogs: AUDIT_LOGS,
       users: USERS,
 
-      getUserIdByEmployeeId: (employeeId) =>
-        get().users.find((u) => u.employeeId === employeeId)?.id,
+      getUserIdByEmployeeId: (employeeId) => {
+        const fromStore = get().users.find((u) => u.employeeId === employeeId)?.id;
+        if (fromStore) return fromStore;
+        return USERS.find((u) => u.employeeId === employeeId)?.id ?? undefined;
+      },
 
       setUserRole: (userId, roleId) => {
         set((state) => ({

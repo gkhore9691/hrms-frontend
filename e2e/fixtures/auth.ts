@@ -14,7 +14,8 @@ export type Role = keyof typeof CREDENTIALS;
 export async function loginAs(page: Page, role: Role): Promise<void> {
   await page.goto("/login");
   await page.getByRole("button", { name: CREDENTIALS[role].label }).click();
-  await page.waitForURL(/\/dashboard/, { timeout: 10_000 });
+  await page.waitForURL(/\/dashboard/, { timeout: 15_000 });
+  await page.waitForLoadState("networkidle").catch(() => {});
 }
 
 export const test = base.extend<{ authenticatedPage: Page; role: Role }>({

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { PageTransition } from "@/components/common/PageTransition";
 import { useAuthStore } from "@/stores/authStore";
 
 export default function DashboardLayout({
@@ -27,9 +28,11 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden md:pl-[260px]">
+      <div className="flex flex-1 flex-col overflow-hidden md:pl-14 xl:pl-[260px]">
         <Topbar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );

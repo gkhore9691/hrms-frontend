@@ -39,6 +39,7 @@ export const useNotificationStore = create<NotificationState>()(
           message: input.message,
           read: input.read ?? false,
           createdAt: input.createdAt ?? new Date().toISOString(),
+          link: input.link,
         };
         set({ notifications: [...list, notification] });
       },

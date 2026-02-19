@@ -2,12 +2,16 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { ONBOARDING_CHECKLISTS } from "@/data/dummyData";
 import { useAdminStore } from "@/stores/adminStore";
+import { useNotificationStore } from "@/stores/notificationStore";
+import { formatDate } from "@/lib/formatters";
 import type { OnboardingChecklist, OnboardingTask, OnboardingTaskStatus } from "@/types";
 
 interface OnboardingState {
   checklists: OnboardingChecklist[];
   completeTask: (checklistId: string, taskId: string) => void;
   addTask: (checklistId: string, task: Omit<OnboardingTask, "id">) => void;
+  assignChecklist: (employeeId: string) => void;
+  checkOverdueTasks: () => void;
   getChecklistForEmployee: (employeeId: string) => OnboardingChecklist | undefined;
   getCompletionPercent: (checklistId: string) => number;
 }
@@ -64,6 +68,60 @@ export const useOnboardingStore = create<OnboardingState>()(
             cl.id === checklistId ? { ...cl, tasks: [...cl.tasks, task] } : cl
           ),
         }));
+      },
+
+      assignChecklist: (employeeId) => {
+        const today = new Date();
+        const addDays = (d: number) =>
+          new Date(today.getTime() + d * 86400000).toISOString().split("T")[0];
+        const base = Date.now();
+        const newChecklist: OnboardingChecklist = {
+          id: `ob-${base}`,
+          employeeId,
+          assignedOn: today.toISOString().split("T")[0],
+          tasks: [
+            { id: `t-${base}-1`, title: "Submit Pre-joining Form", category: "HR", status: "Pending", dueDate: addDays(5), completedOn: null },
+            { id: `t-${base}-2`, title: "Upload KYC Documents", category: "HR", status: "Pending", dueDate: addDays(7), completedOn: null },
+            { id: `t-${base}-3`, title: "IT Setup & Laptop Assignment", category: "IT", status: "Pending", dueDate: addDays(3), completedOn: null },
+            { id: `t-${base}-4`, title: "Bank Account Details Submission", category: "Finance", status: "Pending", dueDate: addDays(10), completedOn: null },
+            { id: `t-${base}-5`, title: "Policy Acceptance", category: "Compliance", status: "Pending", dueDate: addDays(7), completedOn: null },
+            { id: `t-${base}-6`, title: "ID Card Collection", category: "Admin", status: "Pending", dueDate: addDays(14), completedOn: null },
+          ],
+        };
+        set((state) => ({ checklists: [...state.checklists, newChecklist] }));
+        useAdminStore.getState().addAuditLog({
+          action: "Onboarding Checklist Assigned",
+          module: "Onboarding",
+          performedBy: "EMP001",
+          target: employeeId,
+          timestamp: new Date().toISOString().slice(0, 19).replace("T", "T"),
+          details: `Checklist assigned to employee ${employeeId}`,
+        });
+      },
+
+      checkOverdueTasks: () => {
+        const today = new Date().toISOString().split("T")[0];
+        const notifStore = useNotificationStore.getState();
+        const adminStore = useAdminStore.getState();
+        get().checklists.forEach((checklist) => {
+          checklist.tasks.forEach((task) => {
+            if (task.status === "Pending" && task.dueDate < today) {
+              const userId = adminStore.getUserIdByEmployeeId(checklist.employeeId);
+              if (!userId) return;
+              const existing = notifStore.notifications.find(
+                (n) => n.link === `/onboarding/${checklist.id}` && n.title.includes("Overdue")
+              );
+              if (!existing) {
+                notifStore.addNotification({
+                  userId,
+                  title: "Onboarding Task Overdue",
+                  message: `"${task.title}" was due on ${formatDate(task.dueDate)}`,
+                  link: `/onboarding/${checklist.id}`,
+                });
+              }
+            }
+          });
+        });
       },
 
       getChecklistForEmployee: (employeeId) =>
